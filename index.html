@@ -1,3 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reserva – Complexo Turístico Carimã</title>
+
+<style>
+body {
+    background:#111;
+    color:#fff;
+    font-family:Arial, sans-serif;
+    margin:0;
+}
+.container {
+    max-width:500px;
+    margin:auto;
+    padding:15px;
+}
+.logo {
+    width:150px;
+    display:block;
+    margin:15px auto;
+    border-radius:12px;
+}
+.card {
+    background:#1c1c1c;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 6px 18px rgba(0,0,0,.6);
+}
+.card img {
+    width:100%;
+    border-radius:12px;
+    margin-bottom:12px;
+}
+.descricao { font-size:16px; color:#ccc; }
+.legenda { font-size:14px; color:#aaa; margin:10px 0; }
+
+label {
+    display:block;
+    margin-top:12px;
+    font-size:16px;
+}
+input, select {
+    width:100%;
+    padding:14px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    background:#2a2a2a;
+    color:#fff;
+}
+
+.contador {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.contador button {
+    width:50px;
+    height:50px;
+    font-size:24px;
+    background:#2a2a2a;
+    border:none;
+    color:#fff;
+    border-radius:8px;
+}
+.contador span {
+    font-size:20px;
+    font-weight:bold;
+}
+
+a.btn {
+    display:block;
+    text-align:center;
+    padding:16px;
+    border-radius:12px;
+    margin-top:15px;
+    font-size:18px;
+    font-weight:bold;
+    text-decoration:none;
+}
+.pixbtn { background:#00c853; color:#000; }
+.creditobtn { background:#1976d2; color:#fff; }
+.wabtn { background:#25d366; color:#000; }
+
+.total {
+    font-size:22px;
+    font-weight:bold;
+    text-align:center;
+    margin-top:10px;
+}
+.alerta {
+    font-size:14px;
+    text-align:center;
+    margin-top:8px;
+    color:#ffcc00;
+}
+.esgotado {
+    color:#ff5252;
+    font-weight:bold;
+}
+</style>
+
 <script>
 let vagasTotais = 28;
 let vagasRestantes = 28;
@@ -17,22 +122,24 @@ function atualizar() {
     const tipo = document.getElementById("pagamento").value;
     const btn = document.getElementById("pagamentoBtn");
     const alerta = document.getElementById("alerta");
-    const vagasSpan = document.getElementById("vagas");
+    const totalEl = document.getElementById("total");
+    const vagasEl = document.getElementById("vagas");
 
-    // Atualiza contadores
     document.getElementById("qtd").innerText = quantidade;
-    vagasSpan.innerText = vagasRestantes - quantidade;
+    let restantes = vagasRestantes - quantidade;
+    if (restantes < 0) restantes = 0;
+    vagasEl.innerText = restantes;
 
-    // Se acabou vaga
-    if ((vagasRestantes - quantidade) <= 0) {
+    // VAGAS ESGOTADAS
+    if (vagasRestantes <= 0) {
         btn.style.display = "none";
-        alerta.innerText = "❌ Vagas esgotadas! Entre em contato com o Jonatas.";
-        vagasSpan.innerText = 0;
+        alerta.innerHTML = "<span class='esgotado'>❌ Vagas esgotadas. Entre em contato com o Jonatas.</span>";
+        totalEl.innerText = "Indisponível";
         return;
     }
 
-    // Aviso de últimas vagas
-    if ((vagasRestantes - quantidade) <= 5) {
+    // AVISO ÚLTIMAS VAGAS
+    if (restantes <= 5) {
         alerta.innerText = "⚠️ Últimas vagas disponíveis!";
     } else {
         alerta.innerText = "";
@@ -40,19 +147,16 @@ function atualizar() {
 
     // PIX (múltiplas vagas)
     if (tipo === "PIX") {
-        const total = precos.PIX * quantidade;
-        document.getElementById("total").innerText = "Total R$ " + total;
-
+        totalEl.innerText = "Total R$ " + (precos.PIX * quantidade);
         btn.style.display = "block";
-        btn.innerText = "Copiar chave PIX";
         btn.className = "btn pixbtn";
+        btn.innerText = "Copiar chave PIX";
         btn.href = "javascript:copiarPix()";
     }
 
-    // CARTÃO (somente 1 vaga)
+    // CARTÃO (apenas 1 vaga)
     if (tipo === "Credito") {
-        document.getElementById("total").innerText =
-            "Valor por vaga: R$ " + precos.Credito;
+        totalEl.innerText = "Valor por vaga: R$ " + precos.Credito;
 
         if (quantidade > 1) {
             btn.style.display = "none";
@@ -60,8 +164,8 @@ function atualizar() {
               "💳 Para pagar mais de 1 vaga no cartão, procure o Jonatas para gerar um novo link individual.";
         } else {
             btn.style.display = "block";
-            btn.innerText = "Copiar link do cartão 💳";
             btn.className = "btn creditobtn";
+            btn.innerText = "Copiar link do cartão 💳";
             btn.href = "javascript:copiarLinkCartao()";
         }
     }
@@ -73,7 +177,6 @@ function aumentar() {
         atualizar();
     }
 }
-
 function diminuir() {
     if (quantidade > 1) {
         quantidade--;
@@ -83,12 +186,12 @@ function diminuir() {
 
 function copiarPix() {
     navigator.clipboard.writeText(links.PIX);
-    alert("Chave PIX copiada! ✅");
+    alert("Chave PIX copiada!");
 }
 
 function copiarLinkCartao() {
     navigator.clipboard.writeText(links.Credito);
-    alert("Link do cartão copiado! Cole no navegador 💳");
+    alert("Link do cartão copiado! Cole no navegador (Chrome ou Safari).");
 }
 
 function enviarWhats() {
@@ -98,15 +201,12 @@ function enviarWhats() {
         return;
     }
 
-    // CONFIRMAÇÃO FINAL → trava vaga
     vagasRestantes -= quantidade;
     quantidade = 1;
     atualizar();
 
     const msg =
-      `Olá, meu nome é ${nome}. ` +
-      `Acabei de reservar vaga(s) para o passeio no Complexo Turístico Carimã. ` +
-      `Segue o comprovante de pagamento.`;
+      `Olá, meu nome é ${nome}. Reservei vaga(s) para o passeio no Complexo Turístico Carimã. Segue o comprovante.`;
 
     window.open(
       "https://wa.me/5566996926174?text=" + encodeURIComponent(msg),
@@ -114,3 +214,68 @@ function enviarWhats() {
     );
 }
 </script>
+</head>
+
+<body>
+<div class="container">
+
+<img src="https://i.imgur.com/MwHr761.png" class="logo">
+
+<div class="card">
+<img src="https://i.imgur.com/stnWt7z.jpeg">
+
+<div class="descricao">
+🌿 <b>Primeira aventura do ano no Carimã!</b> 💦<br><br>
+📅 <b>04 de janeiro (domingo)</b><br>
+📍 Complexo Turístico Carimã<br>
+💧 Visita às 9 quedas
+</div>
+
+<div class="legenda">
+🚐 Transporte incluso – van com 18 lugares<br>
+👥 Grupo mínimo: 15 pessoas<br>
+⏰ Saída pela manhã | ⏳ Retorno no final da tarde
+</div>
+
+<div class="legenda">
+✅ Incluso:<br>
+• Transporte<br>
+• Acesso às cachoeiras<br>
+• Piscina<br>
+• Almoço 😋
+</div>
+
+<label>Nome completo</label>
+<input id="nome" placeholder="Digite seu nome completo">
+
+<label>Quantidade de vagas</label>
+<div class="contador">
+<button onclick="diminuir()">-</button>
+<span id="qtd">1</span>
+<button onclick="aumentar()">+</button>
+</div>
+
+<p class="alerta">Vagas restantes: <b><span id="vagas">28</span></b></p>
+
+<label>Forma de pagamento</label>
+<select id="pagamento" onchange="atualizar()">
+<option value="PIX">PIX</option>
+<option value="Credito">Cartão de crédito</option>
+</select>
+
+<p id="total" class="total">Total R$ 155</p>
+<p id="alerta" class="alerta"></p>
+
+<a id="pagamentoBtn" class="btn pixbtn" href="javascript:copiarPix()">Copiar chave PIX</a>
+
+<a class="btn wabtn" href="javascript:enviarWhats()">
+Após pagamento, clique aqui e envie o comprovante
+</a>
+
+</div>
+</div>
+
+<script>atualizar();</script>
+</body>
+</html>
+
